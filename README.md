@@ -4,7 +4,7 @@ A serverless email API service for handling form submissions from client website
 
 ## 🎯 Overview
 
-Mayfly Forms provides a simple, cost-effective way to handle contact forms and other form submissions without managing servers. Perfect for static sites, portfolios, and any application needing reliable form processing.
+OSS Forms API provides a simple, cost-effective way to handle contact forms and other form submissions without managing servers. Perfect for static sites, portfolios, and any application needing reliable form processing.
 
 ## ✨ Features
 
@@ -39,8 +39,8 @@ Mayfly Forms provides a simple, cost-effective way to handle contact forms and o
 #### Installation
 ```bash
 # Fork this repository on GitHub first, then:
-git clone https://github.com/YOUR-USERNAME/mayfly-forms-oss.git
-cd mayfly-forms-oss
+git clone https://github.com/YOUR-USERNAME/oss-forms-api.git
+cd oss-forms-api
 
 # Install dependencies
 pip install -r requirements.txt
@@ -101,8 +101,8 @@ If you want to contribute to the project:
 
 ```bash
 # Fork the repo, then clone your fork
-git clone https://github.com/YOUR-USERNAME/mayfly-forms-oss.git
-cd mayfly-forms-oss
+git clone https://github.com/YOUR-USERNAME/oss-forms-api.git
+cd oss-forms-api
 
 # Install development dependencies
 pip install -r requirements.txt
@@ -420,7 +420,7 @@ self.limits = {
 
 ### Project Structure
 ```
-mayfly-forms-oss/
+oss-forms-api/
 ├── app/                          # Core Flask application
 │   ├── handlers/
 │   │   └── email_handler.py      # 🎯 AWS SES integration (make generic!)
@@ -566,9 +566,9 @@ Beyond email providers, we welcome contributions for:
 
 ## 📞 Support & Community
 
-- **🐛 Bug Reports**: [Create an issue](https://github.com/kisernl/mayfly-forms-oss/issues)
-- **💡 Feature Requests**: [Create an issue](https://github.com/kisernl/mayfly-forms-oss/issues) with `enhancement` label
-- **❓ Questions**: [Discussions](https://github.com/kisernl/mayfly-forms-oss/discussions) or create issue with `question` label
+- **🐛 Bug Reports**: [Create an issue](https://github.com/kisernl/oss-forms-api/issues)
+- **💡 Feature Requests**: [Create an issue](https://github.com/kisernl/oss-forms-api/issues) with `enhancement` label
+- **❓ Questions**: [Discussions](https://github.com/kisernl/oss-forms-api/discussions) or create issue with `question` label
 - **🤝 Contributions**: See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines
 
 ## 📄 License
