@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mayfly Forms - Example Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .config {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+        .config input {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mayfly Forms - Example Client</h1>
+    <p>This is an example of how to integrate the Mayfly Forms API (powered by AWS SES) into your website.</p>
+
+    <div class="config">
+        <h3>API Configuration</h3>
+        <label for="api-url">API URL:</label>
+        <input type="url" id="api-url" placeholder="https://your-api-gateway-url.amazonaws.com/dev" required>
+        
+        <label for="api-key">API Key:</label>
+        <input type="text" id="api-key" placeholder="your-api-key" required>
+        
+        <label for="to-email">To Email:</label>
+        <input type="email" id="to-email" placeholder="recipient@example.com" required>
+    </div>
+
+    <div id="message-container"></div>
+
+    <form id="contact-form">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" value="New Contact Form Submission">
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone (optional):</label>
+            <input type="tel" id="phone" name="phone">
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" required></textarea>
+        </div>
+
+        <button type="submit" id="submit-btn">Send Message</button>
+    </form>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submit-btn');
+            const messageContainer = document.getElementById('message-container');
+            
+            // Get configuration
+            const apiUrl = document.getElementById('api-url').value.trim();
+            const apiKey = document.getElementById('api-key').value.trim();
+            const toEmail = document.getElementById('to-email').value.trim();
+            
+            if (!apiUrl || !apiKey || !toEmail) {
+                showMessage('Please fill in all API configuration fields above the form.', 'error');
+                return;
+            }
+
+            // Disable submit button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            messageContainer.innerHTML = '';
+
+            // Collect form data
+            const formData = new FormData(e.target);
+            const fields = {};
+            
+            // Convert FormData to object, excluding empty values
+            for (const [key, value] of formData.entries()) {
+                if (value.trim()) {
+                    fields[key] = value.trim();
+                }
+            }
+
+            // Prepare API payload
+            const payload = {
+                to_email: toEmail,
+                subject: fields.subject || 'New Contact Form Submission',
+                source_url: window.location.href,
+                fields: fields
+            };
+
+            try {
+                const response = await fetch(`${apiUrl}/submit-form`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('✅ Message sent successfully! We\'ll get back to you soon.', 'success');
+                    e.target.reset();
+                } else {
+                    showMessage(`❌ Error: ${result.error || 'Failed to send message'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showMessage('❌ Network error. Please check your internet connection and try again.', 'error');
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Message';
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.innerHTML = `<div class="message ${type}">${text}</div>`;
+            
+            // Scroll to message
+            messageContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Auto-save configuration to localStorage
+        ['api-url', 'api-key', 'to-email'].forEach(id => {
+            const input = document.getElementById(id);
+            
+            // Load saved value
+            const saved = localStorage.getItem(`mayfly-forms-${id}`);
+            if (saved) {
+                input.value = saved;
+            }
+            
+            // Save on change
+            input.addEventListener('input', () => {
+                localStorage.setItem(`mayfly-forms-${id}`, input.value);
+            });
+        });
+    </script>
+</body>
+</html>

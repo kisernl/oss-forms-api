@@ -1,0 +1,41 @@
+{
+  "name": "mayfly-forms",
+  "version": "1.0.0",
+  "description": "A serverless email API service built with Python Flask, AWS Lambda, and AWS SES for handling form submissions from client websites.",
+  "main": "lambda_function.py",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:dev": "serverless deploy --stage dev",
+    "deploy:prod": "serverless deploy --stage prod",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f api"
+  },
+  "keywords": [
+    "serverless",
+    "aws-lambda",
+    "email",
+    "forms",
+    "flask",
+    "aws-ses",
+    "contact-form",
+    "api"
+  ],
+  "author": "Mayfly Forms Contributors",
+  "license": "MIT",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/mayfly-forms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/mayfly-forms/issues"
+  },
+  "homepage": "https://github.com/your-username/mayfly-forms#readme",
+  "dependencies": {
+    "serverless": "^3.40.0",
+    "serverless-python-requirements": "^6.1.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
