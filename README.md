@@ -35,6 +35,7 @@ OSS Forms API provides a simple, cost-effective way to handle contact forms and 
 - Node.js 14+ (for Serverless Framework)
 - AWS CLI configured with appropriate permissions
 - AWS account with SES access
+- **Free Serverless Framework account** (required for deployment)
 
 #### Installation
 ```bash
@@ -42,8 +43,15 @@ OSS Forms API provides a simple, cost-effective way to handle contact forms and 
 git clone https://github.com/YOUR-USERNAME/oss-forms-api.git
 cd oss-forms-api
 
-# Install dependencies
+# (Recommended) Create a Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate 
+pip install --upgrade pip
+
+# Install Python dependencies
 pip install -r requirements.txt
+
+# Install Node.js dependencies
 npm install
 
 # Install Serverless Framework globally (if not already installed)
@@ -51,32 +59,50 @@ npm install -g serverless
 ```
 
 #### AWS SES Setup
-Before deploying, configure AWS SES:
+Before deploying, configure AWS SES in your target region:
 
 ```bash
-# 1. Verify your sender email address or domain
-aws ses verify-email-identity --email-address noreply@yourdomain.com
+# 1. Set your AWS region (must match serverless.yml region)
+export AWS_REGION=us-east-2
 
-# 2. Check verification status
-aws ses get-identity-verification-attributes --identities noreply@yourdomain.com
+# 2. Verify your sender email address or domain
+aws ses verify-email-identity --email-address noreply@yourdomain.com --region $AWS_REGION
 
-# 3. If in SES sandbox, verify recipient emails for testing
-aws ses verify-email-identity --email-address test@yourdomain.com
+# 3. Check verification status (wait for "Success")
+aws ses get-identity-verification-attributes --identities noreply@yourdomain.com --region $AWS_REGION
+
+# 4. If in SES sandbox, verify recipient emails for testing
+aws ses verify-email-identity --email-address test@yourdomain.com --region $AWS_REGION
 ```
 
+**Important**: The SES verification must be done in the same AWS region where you deploy the Lambda function. If you change regions later, you'll need to re-verify your email in the new region.
+
 #### Configuration
-Set environment variables (create `.env` file or use your deployment method):
+
+**IMPORTANT**: Set these environment variables before deployment. The deployment will fail without them.
 
 ```bash
-# Required
-VALID_API_KEYS=your-secret-key-1,your-secret-key-2
+# Required - API keys for client authentication
+# Each key must be at least 16 characters long
+export VALID_API_KEYS=your-secret-key-12345,another-secret-key-67890
 
-# Recommended
-SES_DEFAULT_SENDER=noreply@yourdomain.com  # Must be verified in SES
-AWS_REGION=us-east-1
+# Recommended - Your verified SES sender email
+export SES_DEFAULT_SENDER=noreply@yourdomain.com
 
-# For local development only
-FLASK_ENV=development
+# Optional - AWS region (defaults to us-east-2 in serverless.yml)
+export AWS_REGION=us-east-2
+```
+
+**API Key Requirements:**
+- Minimum 16 characters per key
+- Use strong, random strings
+- Separate multiple keys with commas (no spaces)
+- These will be used by your frontend to authenticate API calls
+
+**Example of generating secure API keys:**
+```bash
+# Generate random 32-character keys
+openssl rand -hex 16  # outputs: a1b2c3d4e5f6789012345678901234567890abcd
 ```
 
 #### Local Development
@@ -86,14 +112,58 @@ python app/main.py
 # API available at http://localhost:5000
 ```
 
-#### Deploy to AWS
+#### Serverless Framework Setup
+The project uses Serverless Framework for AWS deployment, which simplifies Lambda and API Gateway configuration. As of v4, Serverless Framework requires a free account:
+
 ```bash
+# First-time setup: Login to Serverless Framework (free)
+serverless login
+
+# The login is required because Serverless Framework:
+# - Handles complex AWS Lambda + API Gateway configuration
+# - Manages deployment packaging and dependencies
+# - Provides infrastructure-as-code via serverless.yml
+# - Simplifies CORS, environment variables, and IAM permissions
+```
+
+**Why Serverless Framework?**
+- **Simplified deployment**: Converts `serverless.yml` into CloudFormation templates
+- **Automatic CORS setup**: Handles browser compatibility for form submissions
+- **Dependency management**: Packages Python dependencies correctly for Lambda
+- **Environment isolation**: Easy dev/staging/prod deployments
+
+#### Deploy to AWS
+
+**Option 1: Using the deployment script (recommended)**
+```bash
+# Make sure environment variables are set first
+export VALID_API_KEYS=your-secret-key-12345,another-secret-key-67890
+export SES_DEFAULT_SENDER=noreply@yourdomain.com
+
 # Deploy to development
-serverless deploy
+./deploy.sh dev
+
+# Deploy to production
+./deploy.sh prod
+```
+
+**Option 2: Direct serverless commands**
+```bash
+# Make sure environment variables are set first
+export VALID_API_KEYS=your-secret-key-12345,another-secret-key-67890
+export SES_DEFAULT_SENDER=noreply@yourdomain.com
+
+# Deploy to development
+serverless deploy --stage dev
 
 # Deploy to production  
 serverless deploy --stage prod
 ```
+
+**After deployment:**
+- Note the API endpoint URL from the deployment output
+- Test the health endpoint: `curl -X GET https://your-api-url/health`
+- Save your API keys securely for frontend integration
 
 ### For Contributors (Development Setup)
 
@@ -388,6 +458,91 @@ self.limits = {
 - **Encryption**: Enable encryption at rest for any stored data
 
 ⚠️ **Security Notice**: This is a self-hosted solution. You are responsible for the security of your deployment, API key management, and compliance with applicable regulations.
+
+## 🔧 Troubleshooting Common Deployment Issues
+
+### Serverless Framework Login Required
+**Error**: `Serverless Framework V4 CLI requires an account or license key`
+
+**Solution**: 
+```bash
+serverless login
+```
+This creates a free account. The dashboard is optional for monitoring but login is required for deployment.
+
+### Environment Variables Not Set
+**Error**: `VALID_API_KEYS environment variable is required`
+
+**Solution**: 
+```bash
+export VALID_API_KEYS=your-secret-key-12345,another-secret-key-67890
+export SES_DEFAULT_SENDER=noreply@yourdomain.com
+```
+
+### API Key Too Short Error
+**Error**: `API key too short: another-... (minimum 16 characters required)`
+
+**Solution**: Each API key must be at least 16 characters:
+```bash
+# Bad (too short)
+export VALID_API_KEYS=key1,key2
+
+# Good (16+ characters each)
+export VALID_API_KEYS=your-secret-key-12345,another-secret-key-67890
+```
+
+### Internal Server Error (500)
+**Error**: `{"message": "Internal server error"}` when testing endpoints
+
+**Common causes:**
+1. **SES email not verified in deployment region**
+   ```bash
+   # Verify in correct region
+   aws ses verify-email-identity --email-address your-email@domain.com --region us-east-2
+   ```
+
+2. **Wrong AWS region configuration**
+   - Check `serverless.yml` region setting
+   - Verify SES email in same region
+   - Update region if needed:
+   ```bash
+   serverless deploy --stage dev --region us-east-2
+   ```
+
+### Cannot Resolve Environment Variables
+**Error**: `Cannot resolve '${env:VALID_API_KEYS}' variable`
+
+**Solution**: Environment variables aren't available to the serverless command:
+```bash
+# Set variables before each command
+VALID_API_KEYS=your-keys SES_DEFAULT_SENDER=your-email serverless deploy
+```
+
+### Wrong AWS Region Deployment
+**Issue**: Deployed to wrong region (e.g., us-east-1 instead of us-east-2)
+
+**Solution**:
+1. Update `serverless.yml` region setting
+2. Re-verify SES email in new region
+3. Deploy again to new region
+4. Optionally remove old deployment: `serverless remove --stage dev --region us-east-1`
+
+### SES Sandbox Limitations
+**Issue**: Emails only work with verified recipient addresses
+
+**Solution**:
+1. **For testing**: Verify recipient emails in SES
+2. **For production**: Request SES production access via AWS Support
+
+### Permission Denied Errors
+**Error**: AWS permission errors during deployment
+
+**Solution**: Ensure your AWS CLI user has these permissions:
+- Lambda full access
+- API Gateway full access
+- SES full access (or send permissions)
+- CloudFormation full access
+- IAM role creation permissions
 
 ## Cost Estimation
 

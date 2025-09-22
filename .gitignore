@@ -1,71 +1,51 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
 *.so
-.Python
-env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
 venv/
 ENV/
-env.bak/
-venv.bak/
-*.egg-info/
-.pytest_cache/
 
-# Node.js
+# Environment files
+.env
+.env.*
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.cache/
+coverage.xml
+
+# Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
+pnpm-debug.log*
 
-# Serverless
+# Serverless/AWS
 .serverless/
+.aws-sam/
 
-# Environment variables
-.env
-.env.local
+# macOS
+.DS_Store
 
-# IDE
+# IDE/editor
 .vscode/
 .idea/
 *.swp
-*.swo
 
-# OS
-.DS_Store
-Thumbs.db
-
-# AWS
-.aws/
-
-# Deployment artifacts and state
-.serverless/
-serverless-state.json
-
-# Secrets and configuration
-*.pem
-*.key
-*.p12
-*.pfx
-secrets/
-config.json
-
-# Python packages (accidentally installed in project root)
-boto3/
-botocore/
-flask/
-flask_cors/
-jinja2/
-markupsafe/
-werkzeug/
-click/
-itsdangerous/
-s3transfer/
-dateutil/
-six.py
-urllib3/
-blinker/
-bin/
-serverless_wsgi.py
-*.dist-info/
+# Logs
+logs/
+*.log
