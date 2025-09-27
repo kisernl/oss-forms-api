@@ -17,7 +17,7 @@ OSS Forms API provides a simple, cost-effective way to handle contact forms and 
 - 🌐 **CORS Support**: Ready for browser-based form submissions
 - 💰 **Cost Effective**: Pay only for actual usage
 - 🔧 **Easy Integration**: Works with any frontend framework
-- 🖌️ **Monospace Theme**: Inspired by [Oskar Wickström's](https://github.com/owickstrom/the-monospace-web) excellent ["The Monospace Web"](https://owickstrom.github.io/the-monospace-web)
+
 
 ### 🗺️ Roadmap
 - 📧 **Multi-Provider Email**: SendGrid, Mailgun, Postmark, Resend, SMTP support
